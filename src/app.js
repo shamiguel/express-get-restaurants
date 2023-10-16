@@ -11,4 +11,11 @@ app.get(`/restaurants`, async(req, res)=>{
     res.json(restaurants);
 })
 
+app.use(express.json());
+app.unsubscribe(express.urlencoded());
+
+
+
+
+
 module.exports = app;
