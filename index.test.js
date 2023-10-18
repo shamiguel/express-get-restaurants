@@ -17,10 +17,18 @@ describe("/GET restaurants", ()=>{
     })
 
     it("returns a restaurant", async()=>{
-        const restaurant = await Restaurant.findByPk(1);
-        const response = await request(app).get('/restaurants/1');
+        const restData = {name: "Shami's", location: "NYC", cuisine: "fusion"};
+        let id;
+        try{
+            const newRest = await Restaurant.create()
+            id = newRest.id
+        }catch(err){
+            console.log(err)
+        }
+        const restaurant = await Restaurant.findByPk(id)
+        const response = await request(app).get(`/restaurants/${id}`);
         expect(response.statusCode).toBe(200)
-        expect(JSON.stringify(response.body)).toEqual(JSON.stringify(restaurant))
+        expect(JSON.stringify(response.body)).toBe(JSON.stringify(restaurant))
         expect(response.body.name).toBe(restaurant.name);
     })
 });
@@ -38,16 +46,40 @@ describe("/POST restaurants", ()=>{
         expect(response.statusCode).toBe(200)
         expect(response.body.name).toBe("AbbleJeans");
     })
+
+    it('sends an array of errors if validation fails', async()=>{
+        const response = await request(app)
+        .post('/restaurants')
+        .send({
+            name: "",
+            cuisine: "",
+            location:"        "
+        })
+        const data = JSON.parse(response.text)
+        console.log(response.body.error)
+        console.log(data.error)
+        expect(response.statusCode).toBe(200)
+        expect(Array.isArray(response.body.error)).toBe(true);
+        expect(data.error).toEqual(response.body.error);
+    })
 });
 
 describe("/PUT restaurants", ()=>{
     it("returns a successfully updated restaurant", async()=>{
+        const restData = {name: "Shami's", location: "NYC", cuisine: "fusion"};
+        let id;
+        try{
+            const newRest = await Restaurant.create()
+            id = newRest.id
+        }catch(err){
+            console.log(err)
+        }
         const response = await request(app)
-        .put('/restaurants/1')
+        .put(`/restaurants/${id}`)
         .send({
             "name": "AbbleJeans", 
         });
-        const rest = await Restaurant.findByPk(1)
+        const rest = await Restaurant.findByPk(id)
         expect(response.statusCode).toBe(200)
         expect(response.body.name).toBe(rest.name);
     })
@@ -55,8 +87,16 @@ describe("/PUT restaurants", ()=>{
 
 describe("/DELETE restaurants", ()=>{
     it("returns a deleted restaurant", async()=>{
-        const restaurant = await Restaurant.findByPk(1);
-        const response = await request(app).delete('/restaurants/1');
+        const restData = {name: "Shami's", location: "NYC", cuisine: "fusion"};
+        let id;
+        try{
+            const newRest = await Restaurant.create()
+            id = newRest.id
+        }catch(err){
+            console.log(err)
+        }
+        const restaurant = await Restaurant.findByPk(id);
+        const response = await request(app).delete(`/restaurants/${id}`);
         expect(response.statusCode).toBe(200)
         expect(JSON.stringify(response.body)).toEqual(JSON.stringify(restaurant))
     })
